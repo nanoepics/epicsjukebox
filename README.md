@@ -6,7 +6,7 @@ Code jukebox for the nanoEPics projects at the Debye Institute for Nanomaterials
 root
 |__signals: simulated signals and programmed waveforms
 |__processing: analysis code for time traces
-|__imagepro: analysis code for image sequences
+|__imagepro: processing code for image sequences
 |__examples: example of using the functions in the jukebox
 
 # Contributors
