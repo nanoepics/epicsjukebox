@@ -1,25 +1,33 @@
 """
-nanoEPics Jukebox
-brownian_oscillator.py
-class representing the signal from an oscillator with Brownian noise
+## nanoEPics Jukebox
+harmonic_with_FFT.py
+class
 
-    .. lastedit:: 13/12/2021
+### tested classes:
+
+
+### planned:
+
++ bandpass: cleaning time-series
++ get_freq: extracting the main harmonic component of the signal
+
+    .. lastedit:: 21/12/2021
     .. sectionauthor:: Sanli Faez <s.faez@uu.nl>
 """
 import numpy as np
 import matplotlib.pyplot as plt
 
-class damped_jiggler:
-    """Generates time-trace of signal from a single oscillator with added thermal noise. For this type of oscillator we assume that the internal resonance frequency (corner frequency) is much higher than the actuation frequency, and therefore, the noise factor is constant independent of the measurement bandwidth.
+class bandpass:
+    """Generates time-trace of signal from a single oscillator with added thermal noise. For this type of oscillator we assume that the internal resonance frequency (corner frequency) is much higher than the actuation frequency, and therefore, the noise factor is constant independent of the measurement frate.
 
     Parameters
     ----------
     amplitude: sinusoidal oscillation amplitude
     freq: sinusoidal oscillation frequency in Hertz
     baseline: average signal
-    noise: background random noise
-    drift: average drift of signal in time
-    bandwidth: time-series measurement bandwidth = number of datapoints per second
+    noise: background random noise, in case of thermal noise Var(x) = kBT/kappa with kappa the internal spring constant
+    drift: average drift of the signal in time
+    bandwidth: time-series measurement frate = number of datapoints per second
 
     Returns
     -------
