@@ -87,7 +87,7 @@ class Landing_Flashes:
     :return: .loca: intended location of the particles (with sub-pixel resolution)
              .stack: a stack of images with specified noise and particles displaced accordingly
     """
-    def __init__(self, fov = [300, 200], nframes=30, numpar = 20, signal = 10.0, sizevar = 0.3, noise = 10.0, bgframe = [None], dark = 100, psize = 6, unevenIllumination = False, irefmode = 0):
+    def __init__(self, fov = [300, 200], nframes=30, numpar = 20, signal = 10.0, sizevar = 0.3, noise = 10.0, bgframe = [None], dark = 100, psize = 6, unevenIllumination = False, irefmode = 15):
         # camera and monitor parameters
         self.xfov, self.yfov = fov
         self.numpar = numpar # Desired number of landing particles
@@ -117,8 +117,24 @@ class Landing_Flashes:
         generates constant noisy background with extra dark signal
         """
         bg = np.random.poisson(noi, size = (self.xfov, self.yfov)) + dar
+        ffbg = np.fft.rfft2(bg)
+        max_freq = int(self.xfov / self.psize)
+        ffbg[max_freq:, max_freq:] = 0
+        bg = abs(np.fft.irfft2(ffbg))
 
         return bg
+
+    def genIref(self, mode):
+        """
+        generates uneven illumination pattern
+        """
+        ir = np.ones((self.xfov, self.yfov))
+        ffir = np.fft.rfft2(ir)
+        max_freq = mode
+        ffir[max_freq:, max_freq:] = 0
+        ir = abs(np.fft.irfft2(ffir))
+
+        return ir
         
     def initPSF(self, p):
         psf = np.zeros((2*p,2*p))
@@ -145,7 +161,7 @@ class Landing_Flashes:
         """
         :return: generated image with specified position in self.loca up to particle number n
         """
-        simimage = self.bg
+        simimage = np.copy(self.bg)
         psize = self.psize
         if npar > self.numpar:
             m = self.numpar
@@ -156,6 +172,7 @@ class Landing_Flashes:
             y = int(self.loca[n,1])
             simimage[x-psize:x+psize, y-psize:y+psize] = simimage[x-psize:x+psize, y-psize:y+psize] + self.psf * self.loca[n,2]
 
+        semimage = np.multiply(semimage,self.iref)
         return simimage
 
 
@@ -181,14 +198,18 @@ class Landing_Flashes:
 
 nf = 10
 meas = Landing_Flashes(fov=[160,230], numpar = 136, nframes = nf, signal = 20, sizevar=0.5, dark = 10, psize = 9)
-sig = meas.genStack()
-print(sig.shape)
+meas.psize = 20
+meas
+sig = meas.genIref(mode=20)
 ax1 = plt.figure(0)
-im = plt.imshow(sig[:,:,0])
+plt.imshow(sig)
+plt.show()
+#im = plt.imshow(sig[:,:,0])
 
-for i in range(nf):
-    plt.imshow(sig[:,:,i])
-    time.sleep(0.1)
-    plt.show()
+
+# for i in range(nf):
+#     plt.imshow(sig[:,:,i])
+#     time.sleep(0.1)
+#     plt.show()
 
 
