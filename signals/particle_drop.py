@@ -87,7 +87,7 @@ class Landing_Flashes:
     :return: .loca: intended location of the particles (with sub-pixel resolution)
              .stack: a stack of images with specified noise and particles displaced accordingly
     """
-    def __init__(self, fov = [300, 200], nframes=30, numpar = 20, signal = 10.0, sizevar = 0.3, noise = 10.0, bgframe = [None], dark = 100, psize = 6, unevenIllumination = False, irefmode = 15):
+    def __init__(self, fov = [300, 200], nframes=30, numpar = 20, signal = 10.0, sizevar = 0.3, noise = 10.0, bgframe = [None], dark = 100, psize = 6, unevenIllumination = False, irefmode = 2):
         # camera and monitor parameters
         self.xfov, self.yfov = fov
         self.numpar = numpar # Desired number of landing particles
@@ -124,15 +124,12 @@ class Landing_Flashes:
 
         return bg
 
-    def genIref(self, mode):
+    def genIref(self, md):
         """
         generates uneven illumination pattern
         """
-        ir = np.ones((self.xfov, self.yfov))
-        ffir = np.fft.rfft2(ir)
-        max_freq = mode
-        ffir[max_freq:, max_freq:] = 0
-        ir = abs(np.fft.irfft2(ffir))
+        cox, coy = np.meshgrid(np.arange(self.xfov)/self.xfov, np.arange(self.yfov)/self.yfov, indexing='ij')
+        ir = self.noise*np.sin(2*np.pi*md*(cox+coy))+self.signal
 
         return ir
         
@@ -172,7 +169,7 @@ class Landing_Flashes:
             y = int(self.loca[n,1])
             simimage[x-psize:x+psize, y-psize:y+psize] = simimage[x-psize:x+psize, y-psize:y+psize] + self.psf * self.loca[n,2]
 
-        semimage = np.multiply(semimage,self.iref)
+        simimage = np.multiply(simimage,self.iref)
         return simimage
 
 
@@ -197,19 +194,15 @@ class Landing_Flashes:
 
 
 nf = 10
-meas = Landing_Flashes(fov=[160,230], numpar = 136, nframes = nf, signal = 20, sizevar=0.5, dark = 10, psize = 9)
-meas.psize = 20
-meas
-sig = meas.genIref(mode=20)
-ax1 = plt.figure(0)
-plt.imshow(sig)
-plt.show()
-#im = plt.imshow(sig[:,:,0])
+meas = Landing_Flashes(fov=[160,230], numpar = 136, nframes = nf, signal = 20, sizevar=0.5, dark = 10, psize = 6, unevenIllumination = True)
 
 
-# for i in range(nf):
-#     plt.imshow(sig[:,:,i])
-#     time.sleep(0.1)
-#     plt.show()
+sig = meas.genStack()
+im = plt.imshow(sig[:,:,0])
+
+for i in range(nf):
+    plt.imshow(sig[:,:,i])
+    time.sleep(0.1)
+    plt.show()
 
 
