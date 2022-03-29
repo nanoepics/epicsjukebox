@@ -96,6 +96,7 @@ class Landing_Flashes:
         self.sizevar = sizevar # width of the size distribution assuming a square histogram
         self.noise = noise # background noise
         self.psize = psize # diameter of each particle in the image, currently must be integer
+        self.parlist = []  # ground truth for the particle locatio
 
         if unevenIllumination:
             self.iref = self.genIref(irefmode)
@@ -137,7 +138,7 @@ class Landing_Flashes:
         psf = np.zeros((2*p,2*p))
         for n in range(p):
             for m in range(p):
-                psf[p+n,p+m] = psf[p-n-1,p+m] = psf[p+n,p-m-1] = psf[p-n-1,p-m-1] = np.exp(-np.sqrt(n**2+m**2))
+                psf[p+n,p+m] = psf[p-n-1,p+m] = psf[p+n,p-m-1] = psf[p-n-1,p-m-1] = np.exp(-np.sqrt(n**2+m**2)/p)
         return psf
         
 
@@ -150,6 +151,7 @@ class Landing_Flashes:
         pari = np.random.uniform(self.signal*(1-self.sizevar/2), self.signal*(1+self.sizevar/2), size=(self.numpar, 1))
 
         lp = np.concatenate((parx, pary, pari), axis=1)
+        self.parlist = lp
 
         return lp
 
@@ -194,9 +196,10 @@ class Landing_Flashes:
 
 
 nf = 10
-meas = Landing_Flashes(fov=[160,230], numpar = 136, nframes = nf, signal = 20, sizevar=0.5, dark = 10, psize = 6, unevenIllumination = True)
+meas = Landing_Flashes(fov=[160,230], numpar = 130, nframes = nf, signal = 20, sizevar=0.3, dark = 10, psize = 2, unevenIllumination = False)
 
-
+plis = meas.parlist
+print(np.shape(plis))
 sig = meas.genStack()
 im = plt.imshow(sig[:,:,0])
 
@@ -205,4 +208,5 @@ for i in range(nf):
     time.sleep(0.1)
     plt.show()
 
-
+plt.hist(plis[:,2])
+plt.show()
