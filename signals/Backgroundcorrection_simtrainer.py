@@ -24,6 +24,9 @@ meas = Landing_Flashes(seed = 314, fov=fov, numpar = 50, nframes = nf, signal = 
 plis = meas.parlist
 movie = meas.genStack()
 
+#testcomment april 20
+
+
 #%%
 def execute_amovie(moviedata):
     fig = plt.figure()
